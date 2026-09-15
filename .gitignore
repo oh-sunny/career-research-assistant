@@ -21,3 +21,5 @@ Thumbs.db
 
 # Runtime output
 *.log
+data/decision-log.jsonl
+data/run-history.jsonl
