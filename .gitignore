@@ -1,0 +1,23 @@
+# Secrets and local settings
+.env
+.env.*
+!.env.example
+
+# Personal archive data
+data/archive-index.jsonl
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Runtime output
+*.log
