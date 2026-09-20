@@ -50,6 +50,28 @@ class ArchiveIndexTests(unittest.TestCase):
         self.assertEqual(summary["by_role"], {"HR": 1, "MD": 1})
         self.assertEqual(summary["by_work_area"]["HR 데이터"], 1)
 
+    def test_direct_link_can_be_indexed_without_inventing_classification(self):
+        record = {
+            "canonical_url": "https://example.com/user-link?utm_source=share",
+            "title": "사용자가 고른 자료",
+            "purpose": "",
+            "roles": [],
+            "work_areas": [],
+            "notion_page_url": "https://www.notion.so/example-saved-page",
+            "saved_at": "2026-09-19",
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "index.jsonl"
+            path.write_text(json.dumps(record), encoding="utf-8")
+            loaded = load_index(path)
+
+        self.assertEqual(loaded[0]["canonical_url"], "https://example.com/user-link")
+        self.assertEqual(loaded[0]["notion_page_url"], record["notion_page_url"])
+        summary = build_summary(loaded)
+        self.assertEqual(summary["total"], 1)
+        self.assertEqual(summary["by_role"], {})
+        self.assertEqual(summary["by_work_area"], {})
+
 
 if __name__ == "__main__":
     unittest.main()
