@@ -1,0 +1,39 @@
+name: Daily Slack Bot Briefing
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+      timezone: "Asia/Seoul"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-slack-bot-briefing
+  cancel-in-progress: false
+
+jobs:
+  send-briefing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+      NOTION_DATA_SOURCE_ID: ${{ secrets.NOTION_DATA_SOURCE_ID }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+      SLACK_MENTION_USER_ID: ${{ secrets.SLACK_MENTION_USER_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Run automated tests
+        run: python -m unittest discover -s tests -p "test_*.py"
+
+      - name: Send today's Notion briefing as Slack bot
+        run: python scripts/daily_bot_briefing.py

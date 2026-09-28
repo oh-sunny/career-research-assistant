@@ -40,6 +40,7 @@ def load_env_file(path: Path = DEFAULT_ENV_PATH) -> None:
 class SlackSettings:
     bot_token: str
     channel_id: str
+    mention_user_id: str = ""
 
     @property
     def is_configured(self) -> bool:
@@ -53,4 +54,25 @@ def get_slack_settings(path: Path = DEFAULT_ENV_PATH) -> SlackSettings:
     return SlackSettings(
         bot_token=os.getenv("SLACK_BOT_TOKEN", "").strip(),
         channel_id=os.getenv("SLACK_CHANNEL_ID", "").strip(),
+        mention_user_id=os.getenv("SLACK_MENTION_USER_ID", "").strip(),
+    )
+
+
+@dataclass(frozen=True)
+class NotionSettings:
+    api_key: str
+    data_source_id: str
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.api_key and self.data_source_id)
+
+
+def get_notion_settings(path: Path = DEFAULT_ENV_PATH) -> NotionSettings:
+    """Notion에서 오늘 저장된 자료를 읽는 데 필요한 설정값을 반환한다."""
+
+    load_env_file(path)
+    return NotionSettings(
+        api_key=os.getenv("NOTION_API_KEY", "").strip(),
+        data_source_id=os.getenv("NOTION_DATA_SOURCE_ID", "").strip(),
     )

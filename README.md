@@ -17,7 +17,7 @@
 - 원문 URL 정규화와 로컬 인덱스를 이용한 중복 확인
 - Codex의 Notion 연결을 이용한 수동 저장과 생성 페이지 확인
 
-현재 버전은 사용자가 Codex에서 직접 실행하는 프로토타입입니다. 정기 자동 실행과 Slack 전송은 포함하지 않습니다.
+뉴스 수집과 Notion 저장은 기존 웹 ChatGPT 예약이 담당합니다. 이 브랜치는 별도 플러그인이나 OpenAI API 없이, GitHub Actions가 Notion의 당일 저장 자료를 읽어 Slack 봇으로 전송하는 기능을 추가합니다.
 
 ## 핵심 원칙
 
@@ -42,11 +42,43 @@
 ├─ docs/
 │  ├─ collection-policy.md
 │  └─ notion-schema.md
+├─ .github/workflows/
+│  └─ daily-slack-bot.yml        # 매일 오전 10시 봇 브리핑
 ├─ scripts/
-│  └─ archive_index.py
+│  ├─ archive_index.py
+│  ├─ notion_reader.py
+│  ├─ briefing_formatter.py
+│  ├─ slack_sender.py
+│  └─ daily_bot_briefing.py
 └─ tests/
-   └─ test_archive_index.py
+   └─ test_*.py
 ```
+
+## Slack 봇 자동 브리핑
+
+기존 흐름은 유지합니다.
+
+1. 매일 오전 9시 웹 ChatGPT 예약이 뉴스 수집·검수·Notion 저장을 수행합니다.
+2. 매일 오전 10시 GitHub Actions가 `수집 경로=AI 서칭`인 당일 자료를 조회합니다.
+3. 조회 결과를 한 메시지로 묶어 Slack 봇이 지정 채널에 보냅니다.
+
+이 기능은 OpenAI API를 사용하지 않습니다. Notion 읽기 인증값과 Slack 봇 인증값만 사용합니다. 자동 실행에 필요한 값은 GitHub 저장소의 `Settings → Secrets and variables → Actions`에서 다음 이름의 Repository secret으로 등록합니다.
+
+- `NOTION_API_KEY`
+- `NOTION_DATA_SOURCE_ID`
+- `SLACK_BOT_TOKEN`
+- `SLACK_CHANNEL_ID`
+- `SLACK_MENTION_USER_ID` — 선택값, 본인 Slack 사용자 ID
+
+실제 값은 저장소 파일과 대화에 적지 않습니다. Notion 연결에는 대상 데이터 소스 읽기 권한이 필요하며, Slack 앱에는 `chat:write` 권한과 비공개 `#news-briefing` 채널 참여가 필요합니다.
+
+로컬에서 Slack 전송 없이 메시지만 확인할 때는 `.env` 설정 후 다음 명령을 사용합니다.
+
+```powershell
+python scripts/daily_bot_briefing.py --dry-run
+```
+
+GitHub Actions의 예약 실행은 워크플로 파일이 기본 브랜치에 합쳐진 뒤부터 동작합니다. 첫 실제 전송에 성공하기 전에는 웹 ChatGPT 예약의 기존 Slack 전송 단계를 제거하지 않습니다.
 
 ## 중복 확인 도구 사용
 
@@ -66,7 +98,7 @@ python -m unittest discover -s tests -v
 
 ## Notion 사용 준비
 
-현재 프로토타입은 API 키를 코드에서 직접 사용하는 방식이 아니라, Codex에 연결된 Notion을 사용합니다. 따라서 `.env` 파일은 필요하지 않습니다. 필요한 데이터베이스 속성은 [Notion DB 구조](docs/notion-schema.md)에 정리되어 있습니다.
+웹 ChatGPT의 뉴스 저장은 계속 연결된 Notion을 사용합니다. 별도 Slack 봇 전송 코드는 같은 DB를 읽기 위해 Notion 내부 통합 인증값을 사용하며, 로컬 시험에서는 `.env`, GitHub 자동 실행에서는 Repository secrets에 보관합니다. 필요한 데이터베이스 속성은 [Notion DB 구조](docs/notion-schema.md)에 정리되어 있습니다.
 
 ## 공개 저장소 안전 기준
 
@@ -77,6 +109,6 @@ python -m unittest discover -s tests -v
 
 ## 현재 한계
 
-- 자료 탐색과 저장은 아직 자동 예약 실행이 아닙니다.
+- 웹 ChatGPT 수집이 오전 10시까지 끝나지 않으면 해당 날짜의 봇 브리핑에서 일부 자료가 빠질 수 있습니다.
 - Notion에서 직접 수정한 내용과 로컬 인덱스는 자동 동기화되지 않습니다.
 - 실제 자료의 요약과 직무 연결은 사용자가 최종 검토해야 합니다.
