@@ -43,7 +43,7 @@
 │  ├─ collection-policy.md
 │  └─ notion-schema.md
 ├─ .github/workflows/
-│  └─ daily-slack-bot.yml        # 매일 오전 10시 봇 브리핑
+│  └─ daily-slack-bot.yml        # 매일 오전 9시 봇 브리핑
 ├─ scripts/
 │  ├─ archive_index.py
 │  ├─ notion_reader.py
@@ -58,8 +58,8 @@
 
 기존 흐름은 유지합니다.
 
-1. 매일 오전 9시 웹 ChatGPT 예약이 뉴스 수집·검수·Notion 저장을 수행합니다.
-2. 매일 오전 10시 GitHub Actions가 `수집 경로=AI 서칭`인 당일 자료를 조회합니다.
+1. 매일 오전 8시 웹 ChatGPT 예약이 뉴스 수집·검수·Notion 저장을 수행합니다.
+2. 매일 오전 9시 GitHub Actions가 `수집 경로=AI 서칭`인 당일 자료를 조회합니다.
 3. 조회 결과를 한 메시지로 묶어 Slack 봇이 지정 채널에 보냅니다.
 
 이 기능은 OpenAI API를 사용하지 않습니다. Notion 읽기 인증값과 Slack 봇 인증값만 사용합니다. 자동 실행에 필요한 값은 GitHub 저장소의 `Settings → Secrets and variables → Actions`에서 다음 이름의 Repository secret으로 등록합니다.
@@ -109,6 +109,6 @@ python -m unittest discover -s tests -v
 
 ## 현재 한계
 
-- 웹 ChatGPT 수집이 오전 10시까지 끝나지 않으면 해당 날짜의 봇 브리핑에서 일부 자료가 빠질 수 있습니다.
+- 웹 ChatGPT 수집이 오전 9시까지 끝나지 않으면 해당 날짜의 봇 브리핑에서 일부 자료가 빠질 수 있습니다.
 - Notion에서 직접 수정한 내용과 로컬 인덱스는 자동 동기화되지 않습니다.
 - 실제 자료의 요약과 직무 연결은 사용자가 최종 검토해야 합니다.
